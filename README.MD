@@ -1,31 +1,44 @@
-# 🌍 GeoEventViewer v3.0
+# 🌍 GeoEventViewer Pro v5.1 & Intelligence Analyzer
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![PyQt5](https://img.shields.io/badge/PyQt5-41cd52?style=for-the-badge&logo=qt&logoColor=white)
-![Geospatial](https://img.shields.io/badge/Geospatial-Analysis-orange?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Scikit-Learn](https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 
-O **GeoEventViewer** é um dashboard avançado de monitoramento planetário em tempo real. A aplicação consome dados de agências globais (USGS, Smithsonian, NOAA) e utiliza lógica geoespacial para visualizar o raio de influência de desastres naturais e eventos atmosféricos.
+O **GeoEventViewer Suite** é um ecossistema avançado de monitoramento e análise geológica. O projeto evoluiu de um dashboard descritivo para uma ferramenta de **Business Intelligence (BI)** aplicada a geociências, integrando ingestão de dados em tempo real com diagnósticos preditivos baseados em Inteligência Artificial.
 
-## 🛠️ Novidades da Versão 3.0 (Arquitetura Pro)
+## 🛠️ Novidades da Versão Pro (Arquitetura & IA)
 
-- **Arquitetura Orientada a Objetos (O.O):** Separação total entre a lógica de dados (`EventoData`) e a interface gráfica, seguindo princípios de Clean Code e MVC.
-- **Visualização de Raio de Influência:** O mapa agora renderiza círculos de impacto técnico dinâmicos:
-    - **Tsunamis:** Raio de 800km de alerta marítimo.
-    - **Clima (Furacões/Tufões):** Raio de 500km de influência atmosférica.
-    - **Solar:** Impacto global (8.000km) com zoom adaptativo.
-- **Correção de Geolocalização:** Sistema de validação de coordenadas que impede o erro de "Null Island" (0,0), garantindo precisão milimétrica nos eventos sísmicos.
-- **Data Pipeline:** Consumo otimizado de múltiplas fontes via REST API e RSS XML.
+- **Geo-Intelligence Analyzer:** Módulo analítico independente que consome o banco de dados histórico para identificação de padrões globais.
+- **Motor de IA (K-Means Clustering):** Implementação de Machine Learning para calcular "Hotspots" de risco, prevendo centros de massa de futuras ocorrências baseando-se na densidade histórica e probabilidade estatística real.
+- **Visualização Cartográfica:** Integração com `GeoPandas` e `Matplotlib` para renderização de mapas-múndi profissionais com suporte a **Cache Local**, garantindo performance e resiliência em operações offline.
+- **Relatórios Corporativos:** Sistema de exportação nativo para **Excel (.xlsx)** e **PDF (.pdf)** formatado, permitindo a extração de diagnósticos para auditorias ou estudos técnicos externos.
+
+
 
 ## 🚀 Funcionalidades Principais
 
-- **Monitoramento Multicategoria:** Sismos, Tsunamis, Vulcões, Clima e Atividade Solar.
-- **Interface Dark Soft:** Design otimizado para baixa fadiga visual e alta densidade de informação.
-- **Horário Local:** Todos os eventos são convertidos automaticamente para o fuso horário do usuário.
-- **Análise de Impacto Setorial:** Classificação automática de risco (Terrestre, Marítimo, Aviação, etc).
+### 📡 Monitoramento (GeoEventViewer.py)
+- **Filtro Brasil & Fronteiras:** Lógica geoespacial para detecção de sismos em território nacional ou áreas limítrofes, com alertas sonoros diferenciados via `winsound`.
+- **Interatividade Visual:** Cards dinâmicos com efeito *blink* para eventos recentes e integração com `OpenStreetMap` via `PyQtWebEngine`.
+- **Parsing de Dados:** Normalização automática de strings para o padrão profissional: `PAÍS - TIPO DE EVENTO - NOME/ESCALA`.
 
-## 📋 Pré-requisitos e Instalação
+### 🧠 Análise Preditiva (analise.py)
+- **Zonas Críticas Inteligentes:** Hotspots calculados pela IA que utilizam animação visual (blink) para destacar áreas de recorrência iminente.
+- **UX por Seleção:** Painel lateral detalhado que exibe **Confiança Estatística**, **Vulnerabilidade Setorial** e **Impacto Previsto** ao interagir com as marcações do mapa.
+- **Interação Avançada:** Barra de ferramentas integrada para Zoom dinâmico, Pan (movimentação) e captura de tela do mapa.
+
+## 📂 Estrutura de Arquivos
+
+O projeto segue uma arquitetura de persistência desacoplada para garantir integridade e escalabilidade:
+
+* **Banco de Dados (Relacional):** `historico_v5.db` centralizado em na pasta raiz do projeto para integração entre múltiplos módulos.
+* **Cache Geográfico:** `world_map.geojson` gerado automaticamente para otimizar o carregamento cartográfico.
+
+## 📋 Instalação e Dependências
+
+Para rodar o ecossistema completo, instale as bibliotecas necessárias via terminal:
 
 ```bash
-# Dependências necessárias
-pip install requests PyQt5 PyQtWebEngine
+pip install requests PyQt5 PyQtWebEngine pandas scikit-learn matplotlib geopandas reportlab openpyxl

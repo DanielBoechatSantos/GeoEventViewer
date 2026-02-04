@@ -20,7 +20,7 @@ except ImportError:
     winsound = None
 
 # --- CONFIGURAÇÕES GERAIS ---
-VERSAO = "GEO EVENT VIEWER v5.1 - Stable"
+VERSAO = "GEO EVENT VIEWER"
 USER_AGENT = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) GeoViewer/5.1"}
 # Tempo para considerar um evento como "AGORA" (em milissegundos) -> 40 minutos
 TEMPO_RECENTE_MS = 40 * 60 * 1000 
@@ -142,8 +142,9 @@ class TsunamiService:
                     escala, nivel, risco = TsunamiService.analisar_risco(p['mag'])
                     items.append(EventoData(
                         ts=p['time'], categoria="tsunami", titulo="Alerta de Tsunami", loc=p['place'],
-                        lat=g[1], lon=g[0], cor="#e06c75", escala_tecnica=escala,
-                        impacto_tipo="Costeiro / Marítimo", impacto_nivel=nivel, risco_vitimas=risco
+                        lat=g[1], lon=g[0], cor="#98c379", # VERDE para Tsunami
+                        escala_tecnica=escala, impacto_tipo="Costeiro / Marítimo", 
+                        impacto_nivel=nivel, risco_vitimas=risco
                     ))
         except: pass
         return items
@@ -160,40 +161,27 @@ class VulcaoService:
             now_ts = datetime.now().timestamp() * 1000
             
             for item in root.findall('.//item')[:4]:
-                title_raw = item.find('title').text # Exemplo: "Ambrym (Vanuatu)"
+                title_raw = item.find('title').text
                 desc = item.find('description').text
                 
-                # Extraindo Nome e País do padrão "Nome (País)"
                 import re
                 match = re.search(r'(.*)\((.*)\)', title_raw)
-                if match:
-                    nome_vulcao = match.group(1).strip()
-                    pais_vulcao = match.group(2).strip()
-                else:
-                    nome_vulcao = title_raw
-                    pais_vulcao = "Global"
-
-                # Padrão: PAÍS - VULCÃO - Nome
+                nome_vulcao, pais_vulcao = (match.group(1).strip(), match.group(2).strip()) if match else (title_raw, "Global")
                 novo_titulo = f"{pais_vulcao.upper()} - VULCÃO - {nome_vulcao}"
                 
                 geo = item.find('georss:point', namespaces)
-                lat, lon = 0.0, 0.0
-                if geo is not None and geo.text:
-                    parts = geo.text.strip().split()
-                    lat, lon = float(parts[0]), float(parts[1])
+                lat, lon = (float(geo.text.split()[0]), float(geo.text.split()[1])) if geo is not None else (0.0, 0.0)
                 
-                nivel, risco = "Médio", "Baixo Risco"
-                if any(x in desc.lower() for x in ["evacuation", "lava", "ash plume", "explosion"]):
-                    nivel, risco = "Alto", "Médio Risco"
+                nivel, risco = ("Alto", "Médio Risco") if any(x in desc.lower() for x in ["evacuation", "lava", "ash", "explosion"]) else ("Médio", "Baixo Risco")
                 
                 items.append(EventoData(
                     ts=now_ts, categoria="vulcao", titulo=novo_titulo, loc=title_raw,
-                    lat=lat, lon=lon, cor="#98c379", escala_tecnica="Erupção Ativa",
-                    impacto_tipo="Atmosférico / Aéreo", impacto_nivel=nivel, risco_vitimas=risco
+                    lat=lat, lon=lon, cor="#e06c75", # VERMELHO para Vulcão
+                    escala_tecnica="Erupção Ativa", impacto_tipo="Atmosférico / Aéreo", 
+                    impacto_nivel=nivel, risco_vitimas=risco
                 ))
                 now_ts -= 1000
-        except Exception as e:
-            print(f"Erro Vulcão: {e}")
+        except: pass
         return items
 
 class SolarService:
@@ -212,43 +200,24 @@ class SolarService:
 
 class ClimaService:
     @staticmethod
-    @staticmethod
     def fetch():
-        items = []
-        try:
-            url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
-            r = requests.get(url, headers=USER_AGENT, timeout=5).json()
-            for f in r['features']:
-                p, g = f['properties'], f['geometry']['coordinates']
-                if p['tsunami'] == 0:
-                    escala, nivel, risco = SismoService.analisar_risco(p['mag'])
-                    
-                    lat, lon = g[1], g[0]
-                    
-                    # Extração da Sigla/País
-                    loc_full = p['place']
-                    pais = loc_full.split(',')[-1].strip() if ',' in loc_full else "Intl"
-                    
-                    # --- LÓGICA DE ALERTA BRASIL / FRONTEIRAS ---
-                    # Coordenadas aproximadas do retângulo que cobre o Brasil e fronteiras:
-                    # Latitude: +5 (Norte) até -34 (Sul) | Longitude: -75 (Oeste) até -34 (Leste)
-                    is_near_brazil = (-34 <= lat <= 5) and (-75 <= lon <= -34)
-                    
-                    if is_near_brazil or "Brazil" in pais:
-                        # Emite um som diferenciado (mais grave e longo) para destacar
-                        if winsound:
-                            winsound.Beep(440, 1000) # Nota Lá por 1 segundo
-                    
-                    # Padrão solicitado: PAÍS - TERREMOTO - Graus
-                    novo_titulo = f"{pais.upper()} - TERREMOTO - {p['mag']} Richter"
-                    
-                    items.append(EventoData(
-                        ts=p['time'], categoria="sismo", titulo=novo_titulo, loc=p['place'],
-                        lat=lat, lon=lon, cor="#61afef", escala_tecnica=escala,
-                        impacto_tipo="Terrestre / Estrutural", impacto_nivel=nivel, risco_vitimas=risco
-                    ))
-        except: pass
-        return items
+        # Simulador de Ciclones/Furacões (Geralmente dados de NHC/NOAA)
+        now = datetime.now()
+        nomes = ["Alberto", "Beryl", "Chris", "Debby", "Ernesto", "Francine", "Gordon", "Helene"]
+        nome_sel = random.choice(nomes)
+        vento = random.choice([120, 160, 200, 260])
+        
+        if vento > 252: escala, nivel, risco, cat = "Cat 5", "Muito Alto", "Alto Risco", "5"
+        elif vento > 178: escala, nivel, risco, cat = "Cat 3", "Alto", "Médio Risco", "3"
+        else: escala, nivel, risco, cat = "Cat 1", "Médio", "Baixo Risco", "1"
+
+        return [EventoData(
+            ts=now.timestamp()*1000, categoria="clima", 
+            titulo=f"FURACÃO {nome_sel} (Cat {cat})", loc="Atlântico Norte / Caribe",
+            lat=random.uniform(15, 35), lon=random.uniform(-85, -45), cor="#c678dd", 
+            escala_tecnica=f"Saffir-Simpson {escala} ({vento}km/h)",
+            impacto_tipo="Inundação / Ventos Fortes", impacto_nivel=nivel, risco_vitimas=risco
+        )]
 
 # --- UI COMPONENTS ---
 
@@ -441,8 +410,8 @@ class MainWindow(QMainWindow):
 
         self.tiles = {
             "sismo": TileMenu("TERREMOTOS", "sismo", "#61afef"),
-            "tsunami": TileMenu("TSUNAMIS", "tsunami", "#e06c75"),
-            "vulcao": TileMenu("VULCÕES", "vulcao", "#98c379"),
+            "tsunami": TileMenu("TSUNAMIS", "tsunami", "#98c379"), # Atualizado para VERDE
+            "vulcao": TileMenu("VULCÕES", "vulcao", "#e06c75"),   # Atualizado para VERMELHO
             "clima": TileMenu("CLIMA / FURACÃO", "clima", "#c678dd"),
             "solar": TileMenu("ATIV. SOLAR", "solar", "#e5c07b")
         }
